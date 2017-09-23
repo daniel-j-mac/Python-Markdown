@@ -230,7 +230,7 @@ You may ask for help and discuss various other issues on the
 `mailing list`_ and report bugs on the `bug tracker`_.
 
 .. _`mailing list`: http://lists.sourceforge.net/lists/listinfo/python-markdown-discuss
-.. _`bug tracker`: http://github.com/waylan/Python-Markdown/issues
+.. _`bug tracker`: http://github.com/Python-Markdown/markdown/issues
 '''
 
 setup(
@@ -241,9 +241,9 @@ setup(
     description='Python implementation of Markdown.',
     long_description=long_description,
     author='Manfred Stienstra, Yuri takhteyev and Waylan limberg',
-    author_email='waylan.limberg [at] icloud.com',
+    author_email='waylan.limberg@icloud.com',
     maintainer='Waylan Limberg',
-    maintainer_email='waylan.limberg [at] icloud.com',
+    maintainer_email='waylan.limberg@icloud.com',
     license='BSD License',
     packages=['markdown', 'markdown.extensions'],
     scripts=['bin/%s' % SCRIPT_NAME],

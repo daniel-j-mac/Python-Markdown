@@ -103,7 +103,7 @@ BRK = (
 NOIMG = r'(?<!\!)'
 
 # `e=f()` or ``e=f("`")``
-BACKTICK_RE = r'(?<!\\)(`+)(.+?)(?<!`)\2(?!`)'
+BACKTICK_RE = r'(?:(?<!\\)((?:\\{2})+)(?=`+)|(?<!\\)(`+)(.+?)(?<!`)\3(?!`))'
 
 # \<
 ESCAPE_RE = r'\\(.)'
@@ -140,7 +140,7 @@ REFERENCE_RE = NOIMG + BRK + r'\s?\[([^\]]*)\]'
 SHORT_REF_RE = NOIMG + r'\[([^\]]+)\]'
 
 # ![alt text][2]
-IMAGE_REFERENCE_RE = r'\!' + BRK + '\s?\[([^\]]*)\]'
+IMAGE_REFERENCE_RE = r'\!' + BRK + r'\s?\[([^\]]*)\]'
 
 # stand-alone * or _
 NOT_STRONG_RE = r'((^| )(\*|_)( |$))'
@@ -170,7 +170,7 @@ def dequote(string):
         return string
 
 
-ATTR_RE = re.compile("\{@([^\}]*)=([^\}]*)}")  # {@id=123}
+ATTR_RE = re.compile(r"\{@([^\}]*)=([^\}]*)}")  # {@id=123}
 
 
 def handleAttributes(text, parent):
@@ -302,12 +302,16 @@ class BacktickPattern(Pattern):
     """ Return a `<code>` element containing the matching text. """
     def __init__(self, pattern):
         Pattern.__init__(self, pattern)
-        self.tag = "code"
+        self.ESCAPED_BSLASH = '%s%s%s' % (util.STX, ord('\\'), util.ETX)
+        self.tag = 'code'
 
     def handleMatch(self, m):
-        el = util.etree.Element(self.tag)
-        el.text = util.AtomicString(m.group(3).strip())
-        return el
+        if m.group(4):
+            el = util.etree.Element(self.tag)
+            el.text = util.AtomicString(m.group(4).strip())
+            return el
+        else:
+            return m.group(2).replace('\\\\', self.ESCAPED_BSLASH)
 
 
 class DoubleTagPattern(SimpleTagPattern):
@@ -347,7 +351,7 @@ class HtmlPattern(Pattern):
                 try:
                     return self.markdown.serializer(value)
                 except:
-                    return '\%s' % value
+                    return r'\%s' % value
 
         return util.INLINE_PLACEHOLDER_RE.sub(get_stash, text)
 
@@ -454,7 +458,7 @@ class ReferencePattern(LinkPattern):
         except IndexError:
             id = None
         if not id:
-            # if we got something like "[Google][]" or "[Goggle]"
+            # if we got something like "[Google][]" or "[Google]"
             # we'll use "google" as the id
             id = m.group(2).lower()
 
